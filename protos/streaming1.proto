@@ -1,0 +1,68 @@
+syntax = "proto3";
+
+package streaming;
+
+// 📌 Dịch vụ nhận diện xe từ video stream
+service VehicleDetectionService {
+  rpc DetectVehicles(stream Frame) returns (stream VehicleDetection) {}
+}
+
+// 📌 Dịch vụ tracking xe (Bổ sung Frame để DeepSORT hoạt động tốt)
+service TrackingService {
+  rpc TrackObjects(stream TrackingRequest) returns (stream TrackingResult) {}
+}
+
+// 📌 Dịch vụ nhận diện biển số
+service PlateDetectionService {
+  rpc DetectPlates(stream Frame) returns (stream PlateDetection) {}
+}
+
+// 📌 Dịch vụ OCR để đọc biển số
+service OCRService {
+  rpc RecognizePlate(stream CroppedPlate) returns (stream OCRResult) {}
+}
+
+// 📌 Server tập hợp kết quả và gửi đến Client
+service ResultService {
+  rpc AggregateResults(stream TrackingResult) returns (stream FinalResult) {}
+}
+
+// 🖼️ Frame gốc từ camera
+message Frame {
+  int64 frame_id = 1;
+  int64 timestamp = 2;
+  bytes image_data = 3;
+}
+
+// 🚗 Kết quả nhận diện xe
+message VehicleDetection {
+  int64 frame_id = 1;
+  repeated DetectedObject vehicles = 2;
+}
+
+// 📌 Gửi cả frame + bounding box đến Tracking Server
+message TrackingRequest {
+  int64 frame_id = 1;
+  bytes image_data = 2; // Thêm ảnh frame để DeepSORT sử dụng
+  repeated DetectedObject vehicles = 3;
+}
+
+// 🎯 Kết quả tracking xe và biển số
+message TrackingResult {
+  int64 frame_id = 1;
+  repeated TrackedObject tracked_vehicles = 2;
+}
+
+message DetectedObject {
+  int32 tracking_id = 1;
+  BoundingBox bbox = 2;
+  float confidence = 3;
+}
+
+// 📦 Bounding box (dùng chung cho tất cả service)
+message BoundingBox {
+  int32 x1 = 1;
+  int32 y1 = 2;
+  int32 x2 = 3;
+  int32 y2 = 4;
+}
