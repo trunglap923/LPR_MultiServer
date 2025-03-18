@@ -3,7 +3,6 @@ app.py
 app1.py
 detect_plate.py
 detect_vehicle.py
-Dockerfile
 ex.py
 recognize_text.py
 result.csv
