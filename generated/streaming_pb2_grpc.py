@@ -5,67 +5,6 @@ import grpc
 import streaming_pb2 as streaming__pb2
 
 
-class VideoStreamingServiceStub(object):
-    """Missing associated documentation comment in .proto file."""
-
-    def __init__(self, channel):
-        """Constructor.
-
-        Args:
-            channel: A grpc.Channel.
-        """
-        self.StreamVideo = channel.stream_stream(
-                '/streaming.VideoStreamingService/StreamVideo',
-                request_serializer=streaming__pb2.Frame.SerializeToString,
-                response_deserializer=streaming__pb2.Frame.FromString,
-                )
-
-
-class VideoStreamingServiceServicer(object):
-    """Missing associated documentation comment in .proto file."""
-
-    def StreamVideo(self, request_iterator, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-
-def add_VideoStreamingServiceServicer_to_server(servicer, server):
-    rpc_method_handlers = {
-            'StreamVideo': grpc.stream_stream_rpc_method_handler(
-                    servicer.StreamVideo,
-                    request_deserializer=streaming__pb2.Frame.FromString,
-                    response_serializer=streaming__pb2.Frame.SerializeToString,
-            ),
-    }
-    generic_handler = grpc.method_handlers_generic_handler(
-            'streaming.VideoStreamingService', rpc_method_handlers)
-    server.add_generic_rpc_handlers((generic_handler,))
-
-
- # This class is part of an EXPERIMENTAL API.
-class VideoStreamingService(object):
-    """Missing associated documentation comment in .proto file."""
-
-    @staticmethod
-    def StreamVideo(request_iterator,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.stream_stream(request_iterator, target, '/streaming.VideoStreamingService/StreamVideo',
-            streaming__pb2.Frame.SerializeToString,
-            streaming__pb2.Frame.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-
 class VehicleDetectionServiceStub(object):
     """Missing associated documentation comment in .proto file."""
 
@@ -78,7 +17,7 @@ class VehicleDetectionServiceStub(object):
         self.DetectVehicles = channel.stream_stream(
                 '/streaming.VehicleDetectionService/DetectVehicles',
                 request_serializer=streaming__pb2.Frame.SerializeToString,
-                response_deserializer=streaming__pb2.VehicleDetection.FromString,
+                response_deserializer=streaming__pb2.Response.FromString,
                 )
 
 
@@ -97,7 +36,7 @@ def add_VehicleDetectionServiceServicer_to_server(servicer, server):
             'DetectVehicles': grpc.stream_stream_rpc_method_handler(
                     servicer.DetectVehicles,
                     request_deserializer=streaming__pb2.Frame.FromString,
-                    response_serializer=streaming__pb2.VehicleDetection.SerializeToString,
+                    response_serializer=streaming__pb2.Response.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -122,7 +61,7 @@ class VehicleDetectionService(object):
             metadata=None):
         return grpc.experimental.stream_stream(request_iterator, target, '/streaming.VehicleDetectionService/DetectVehicles',
             streaming__pb2.Frame.SerializeToString,
-            streaming__pb2.VehicleDetection.FromString,
+            streaming__pb2.Response.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -139,7 +78,7 @@ class PlateDetectionServiceStub(object):
         self.DetectPlates = channel.stream_stream(
                 '/streaming.PlateDetectionService/DetectPlates',
                 request_serializer=streaming__pb2.Frame.SerializeToString,
-                response_deserializer=streaming__pb2.PlateDetection.FromString,
+                response_deserializer=streaming__pb2.Response.FromString,
                 )
 
 
@@ -158,7 +97,7 @@ def add_PlateDetectionServiceServicer_to_server(servicer, server):
             'DetectPlates': grpc.stream_stream_rpc_method_handler(
                     servicer.DetectPlates,
                     request_deserializer=streaming__pb2.Frame.FromString,
-                    response_serializer=streaming__pb2.PlateDetection.SerializeToString,
+                    response_serializer=streaming__pb2.Response.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -183,7 +122,7 @@ class PlateDetectionService(object):
             metadata=None):
         return grpc.experimental.stream_stream(request_iterator, target, '/streaming.PlateDetectionService/DetectPlates',
             streaming__pb2.Frame.SerializeToString,
-            streaming__pb2.PlateDetection.FromString,
+            streaming__pb2.Response.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -200,7 +139,7 @@ class TrackingServiceStub(object):
         self.TrackObjects = channel.stream_stream(
                 '/streaming.TrackingService/TrackObjects',
                 request_serializer=streaming__pb2.VehicleDetection.SerializeToString,
-                response_deserializer=streaming__pb2.TrackingResult.FromString,
+                response_deserializer=streaming__pb2.Response.FromString,
                 )
 
 
@@ -219,7 +158,7 @@ def add_TrackingServiceServicer_to_server(servicer, server):
             'TrackObjects': grpc.stream_stream_rpc_method_handler(
                     servicer.TrackObjects,
                     request_deserializer=streaming__pb2.VehicleDetection.FromString,
-                    response_serializer=streaming__pb2.TrackingResult.SerializeToString,
+                    response_serializer=streaming__pb2.Response.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -244,7 +183,7 @@ class TrackingService(object):
             metadata=None):
         return grpc.experimental.stream_stream(request_iterator, target, '/streaming.TrackingService/TrackObjects',
             streaming__pb2.VehicleDetection.SerializeToString,
-            streaming__pb2.TrackingResult.FromString,
+            streaming__pb2.Response.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -261,7 +200,7 @@ class OCRServiceStub(object):
         self.RecognizePlate = channel.stream_stream(
                 '/streaming.OCRService/RecognizePlate',
                 request_serializer=streaming__pb2.PlateDetection.SerializeToString,
-                response_deserializer=streaming__pb2.OCRResult.FromString,
+                response_deserializer=streaming__pb2.Response.FromString,
                 )
 
 
@@ -280,7 +219,7 @@ def add_OCRServiceServicer_to_server(servicer, server):
             'RecognizePlate': grpc.stream_stream_rpc_method_handler(
                     servicer.RecognizePlate,
                     request_deserializer=streaming__pb2.PlateDetection.FromString,
-                    response_serializer=streaming__pb2.OCRResult.SerializeToString,
+                    response_serializer=streaming__pb2.Response.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -305,6 +244,206 @@ class OCRService(object):
             metadata=None):
         return grpc.experimental.stream_stream(request_iterator, target, '/streaming.OCRService/RecognizePlate',
             streaming__pb2.PlateDetection.SerializeToString,
-            streaming__pb2.OCRResult.FromString,
+            streaming__pb2.Response.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+
+class VideoStreamingServiceStub(object):
+    """
+    ==== CLIENT STREAM RESPONSE ====
+
+
+    """
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.StreamVideo = channel.stream_unary(
+                '/streaming.VideoStreamingService/StreamVideo',
+                request_serializer=streaming__pb2.Frame.SerializeToString,
+                response_deserializer=streaming__pb2.Response.FromString,
+                )
+
+
+class VideoStreamingServiceServicer(object):
+    """
+    ==== CLIENT STREAM RESPONSE ====
+
+
+    """
+
+    def StreamVideo(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_VideoStreamingServiceServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'StreamVideo': grpc.stream_unary_rpc_method_handler(
+                    servicer.StreamVideo,
+                    request_deserializer=streaming__pb2.Frame.FromString,
+                    response_serializer=streaming__pb2.Response.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'streaming.VideoStreamingService', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+
+
+ # This class is part of an EXPERIMENTAL API.
+class VideoStreamingService(object):
+    """
+    ==== CLIENT STREAM RESPONSE ====
+
+
+    """
+
+    @staticmethod
+    def StreamVideo(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_unary(request_iterator, target, '/streaming.VideoStreamingService/StreamVideo',
+            streaming__pb2.Frame.SerializeToString,
+            streaming__pb2.Response.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+
+class AggregatedServiceStub(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def __init__(self, channel):
+        """Constructor.
+
+        Args:
+            channel: A grpc.Channel.
+        """
+        self.ProcessVideo = channel.stream_stream(
+                '/streaming.AggregatedService/ProcessVideo',
+                request_serializer=streaming__pb2.Frame.SerializeToString,
+                response_deserializer=streaming__pb2.AggregatedResult.FromString,
+                )
+        self.ProcessPlates = channel.stream_stream(
+                '/streaming.AggregatedService/ProcessPlates',
+                request_serializer=streaming__pb2.OCRResult.SerializeToString,
+                response_deserializer=streaming__pb2.Response.FromString,
+                )
+        self.ProcessVehicles = channel.stream_stream(
+                '/streaming.AggregatedService/ProcessVehicles',
+                request_serializer=streaming__pb2.TrackingResult.SerializeToString,
+                response_deserializer=streaming__pb2.Response.FromString,
+                )
+
+
+class AggregatedServiceServicer(object):
+    """Missing associated documentation comment in .proto file."""
+
+    def ProcessVideo(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ProcessPlates(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ProcessVehicles(self, request_iterator, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+
+def add_AggregatedServiceServicer_to_server(servicer, server):
+    rpc_method_handlers = {
+            'ProcessVideo': grpc.stream_stream_rpc_method_handler(
+                    servicer.ProcessVideo,
+                    request_deserializer=streaming__pb2.Frame.FromString,
+                    response_serializer=streaming__pb2.AggregatedResult.SerializeToString,
+            ),
+            'ProcessPlates': grpc.stream_stream_rpc_method_handler(
+                    servicer.ProcessPlates,
+                    request_deserializer=streaming__pb2.OCRResult.FromString,
+                    response_serializer=streaming__pb2.Response.SerializeToString,
+            ),
+            'ProcessVehicles': grpc.stream_stream_rpc_method_handler(
+                    servicer.ProcessVehicles,
+                    request_deserializer=streaming__pb2.TrackingResult.FromString,
+                    response_serializer=streaming__pb2.Response.SerializeToString,
+            ),
+    }
+    generic_handler = grpc.method_handlers_generic_handler(
+            'streaming.AggregatedService', rpc_method_handlers)
+    server.add_generic_rpc_handlers((generic_handler,))
+
+
+ # This class is part of an EXPERIMENTAL API.
+class AggregatedService(object):
+    """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def ProcessVideo(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_stream(request_iterator, target, '/streaming.AggregatedService/ProcessVideo',
+            streaming__pb2.Frame.SerializeToString,
+            streaming__pb2.AggregatedResult.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ProcessPlates(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_stream(request_iterator, target, '/streaming.AggregatedService/ProcessPlates',
+            streaming__pb2.OCRResult.SerializeToString,
+            streaming__pb2.Response.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ProcessVehicles(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_stream(request_iterator, target, '/streaming.AggregatedService/ProcessVehicles',
+            streaming__pb2.TrackingResult.SerializeToString,
+            streaming__pb2.Response.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -11,3 +11,6 @@ ultralytics==8.3.37
 Flask==3.0.2
 Flask-Cors==5.0.0
 grpcio-tools==1.46.0
+torchreid== 0.2.5
+gdown==5.2.0
+tensorboard==2.19.0

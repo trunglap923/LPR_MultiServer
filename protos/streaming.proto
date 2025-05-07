@@ -2,81 +2,138 @@ syntax = "proto3";
 
 package streaming;
 
+// import "google/protobuf/empty.proto";
+
+//
+// ==== COMMON MESSAGES ====
+//
+
+message BBox {
+    float x1 = 1;
+    float y1 = 2;
+    float x2 = 3;
+    float y2 = 4;
+}
+
 message Frame {
     int64 frame_id = 1;
     bytes image_data = 2;
+}
+
+message Response {
+    int64 frame_id = 1;
+    string status = 2;
+}
+
+//
+// ==== VEHICLE DETECTION ====
+//
+
+message DetectedVehicle {
+    int32 id = 1;
+    BBox bbox = 2;
+    int32 class_id = 3;
+    float confidence = 4;
 }
 
 message VehicleDetection {
     int64 frame_id = 1;
     bytes image_data = 2;
     repeated DetectedVehicle vehicles = 3;
-    bool success = 4;
 }
 
-message DetectedVehicle {
-    int32 id = 1;
-    repeated float bbox = 2; // [x1, y1, x2, y2]
-    int32 class_id = 3;
-    float confidence = 4;
+service VehicleDetectionService {
+    rpc DetectVehicles(stream Frame) returns (stream Response);
 }
 
-message PlateDetection {
-    int64 frame_id = 1;
-    repeated DetectedPlate plates = 2;
-    bool success = 3;
-}
+//
+// ==== PLATE DETECTION ====
+//
 
 message DetectedPlate {
-    repeated float bbox = 1; // [x1, y1, x2, y2]
+    BBox bbox = 1;
     int32 class_id = 2;
     float confidence = 3;
     bytes cropped_plate = 4;
 }
 
-message TrackingResult {
+message PlateDetection {
     int64 frame_id = 1;
-    repeated TrackedObject tracks = 2;
-    bool success = 3;
+    bytes image_data = 2;
+    repeated DetectedPlate plates = 3;
 }
+
+service PlateDetectionService {
+    rpc DetectPlates(stream Frame) returns (stream Response);
+}
+
+//
+// ==== TRACKING ====
+//
 
 message TrackedObject {
     int32 id = 1;
-    repeated float bbox = 2;
+    BBox bbox = 2;
     int32 class_id = 3;
     float score = 4;
+}
+
+message TrackingResult {
+    int64 frame_id = 1;
+    repeated TrackedObject tracks = 2;
+}
+
+service TrackingService {
+    rpc TrackObjects(stream VehicleDetection) returns (stream Response);
+}
+
+//
+// ==== OCR ====
+//
+
+message PlateRecognition {
+    BBox bbox = 1;
+    string plate_number = 2;
+    bytes cropped_plate = 3;
 }
 
 message OCRResult {
     int64 frame_id = 1;
     repeated PlateRecognition plates = 2;
-    bool success = 3;
-}
-
-message PlateRecognition {
-    repeated float bbox = 1;
-    string plate_number = 2;
-    bytes cropped_plate = 3;
-}
-
-service VideoStreamingService {
-    rpc StreamVideo(stream Frame) returns (stream Frame);
-}
-
-service VehicleDetectionService {
-    rpc DetectVehicles(stream Frame) returns (stream VehicleDetection);
-}
-
-service PlateDetectionService {
-    rpc DetectPlates(stream Frame) returns (stream PlateDetection);
-}
-
-service TrackingService {
-    rpc TrackObjects(stream VehicleDetection) returns (stream TrackingResult);
 }
 
 service OCRService {
-    rpc RecognizePlate(stream PlateDetection) returns (stream OCRResult);
+    rpc RecognizePlate(stream PlateDetection) returns (stream Response);
+}
+
+//
+// ==== CLIENT STREAM RESPONSE ====
+//
+
+service VideoStreamingService {
+    rpc StreamVideo(stream Frame) returns (Response);
+}
+
+
+// ==== MAIN SERVER ====
+message ObjectResult {
+    int32 tracking_id = 1;
+    BBox vehicle_bbox = 2;
+    BBox plate_bbox = 3;
+    string plate_number = 4;
+    int32 vehicle_class = 5;
+}
+
+message AggregatedResult {
+    int64 frame_id = 1;
+    bytes image_data = 2;
+    repeated ObjectResult objects = 3;
+}
+
+service AggregatedService {
+    rpc ProcessVideo(stream Frame) returns (stream AggregatedResult);
+    rpc ProcessPlates(stream OCRResult) returns (stream Response);
+    rpc ProcessVehicles(stream TrackingResult) returns (stream Response);
 }
 
 // python -m grpc_tools.protoc --proto_path=protos --python_out=generated --grpc_python_out=generated protos/streaming.proto
