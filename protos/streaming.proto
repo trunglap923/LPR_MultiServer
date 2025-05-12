@@ -18,6 +18,7 @@ message BBox {
 message Frame {
     int64 frame_id = 1;
     bytes image_data = 2;
+    int64 timestamp = 3;
 }
 
 message Response {
@@ -127,7 +128,8 @@ message ObjectResult {
 message AggregatedResult {
     int64 frame_id = 1;
     bytes image_data = 2;
-    repeated ObjectResult objects = 3;
+    int64 timestamp = 3;
+    repeated ObjectResult objects = 4;
 }
 
 service AggregatedService {

@@ -26,7 +26,7 @@ class AggregatedServiceServicer(streaming_pb2_grpc.AggregatedServiceServicer):
             print(f"🧠 Nhận frame {frame_id} từ gateway")
             
             async with self.lock:
-                self.frame_images[frame_id] = frame.image_data
+                self.frame_images[frame_id] = frame
             self.frame_queue.task_done()
 
     async def ProcessVideo(self, request_iterator, context):
@@ -39,6 +39,7 @@ class AggregatedServiceServicer(streaming_pb2_grpc.AggregatedServiceServicer):
                 async with self.lock:
                     self.response_gateway[frame.frame_id] = response_queue
                 await self.frame_queue.put((frame, response_queue))
+                await self.try_merge_and_send(frame.frame_id)
 
         receiver_task = asyncio.create_task(receiver())
         try:
@@ -112,11 +113,12 @@ class AggregatedServiceServicer(streaming_pb2_grpc.AggregatedServiceServicer):
             )
 
         async with self.lock:
-            image = self.frame_images.pop(frame_id, None)
+            frame = self.frame_images.pop(frame_id, None)
         
         return streaming_pb2.AggregatedResult(
             frame_id=frame_id,
-            image_data=image,
+            image_data=frame.image_data if frame else b"",
+            timestamp=frame.timestamp if frame else 0,
             objects=merged_objects
         )
 

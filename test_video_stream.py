@@ -21,11 +21,13 @@ stats = {"sent": 0, "received": 0}
 stop_event = threading.Event()  # ⛔ Biến để dừng an toàn
 
 # Đường dẫn video
-video_path = "./input_test/video/1.mp4"
+video_path = "./input_test/video/3.mp4"
 cap = cv2.VideoCapture(video_path)
 frame_rate = cap.get(cv2.CAP_PROP_FPS)
 frame_interval = 1.0 / frame_rate
 frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+target_send_fps = 10
+send_interval = round(frame_rate / target_send_fps)
 
 def signal_handler(sig, frame):
     print("\n🛑 Nhận tín hiệu dừng! Đang thoát...")
@@ -38,38 +40,41 @@ signal.signal(signal.SIGINT, signal_handler)
 def read_video_thread():
     """Luồng đọc frame từ video và đưa vào queue theo FPS gốc."""
     frame_id = 1
+    start_time = time.time()
+
     while not stop_event.is_set() and cap.isOpened():
-        # start_time = time.time()
+        loop_start = time.time()
 
         ret, frame = cap.read()
         if not ret:
             break
 
-        _, img_encoded = cv2.imencode(".jpg", frame)
-        frame_data = streaming_pb2.Frame(
-            frame_id=frame_id,
-            image_data=img_encoded.tobytes()
-        )
-        frame_queue.put(frame_data)
-        print(f"📤 Đã đưa vào hàng đợi Frame ID {frame_id}")
-        frame_id += 1
-        stats["sent"] += 1
-        
-        # user_input = input("⏸️ Nhấn Enter để gửi frame tiếp theo hoặc Ctrl+C để dừng: ")
-        # if stop_event.is_set():
-        #     break
+        if frame_id % 2 == 0:
+            _, img_encoded = cv2.imencode(".jpg", frame)
+            frame_data = streaming_pb2.Frame(
+                frame_id=frame_id,
+                image_data=img_encoded.tobytes()
+            )
+            frame_queue.put(frame_data)
+            print(f"📤 Đã đưa vào hàng đợi Frame ID {frame_id}")
+            stats["sent"] += 1
 
-        # elapsed = time.time() - start_time
-        # time.sleep(max(0, frame_interval - elapsed))
+        frame_id += 1
+
+        # elapsed = time.time() - loop_start
+        # time.sleep(max(0, frame_interval - elapsed))  # giữ nhịp theo FPS
 
     frame_queue.put(None)  # Gửi tín hiệu kết thúc
 
 def send_stream():
-    """Generator gửi frame từ queue sang server."""
+    """Generator gửi frame từ queue sang server, thêm timestamp tại thời điểm gửi."""
     while True:
         frame = frame_queue.get()
         if frame is None:
             break
+
+        frame.timestamp = int(time.time() * 1000)
+        print(f"Gửi Frame ID {frame.frame_id} tới server lúc {frame.timestamp}")
         yield frame
 
 def receive_response_thread(responses):
@@ -92,7 +97,7 @@ receive_thread.start()
 
 # Đợi luồng hoàn tất
 video_thread.join()
-receive_thread.join()
+# receive_thread.join()
 cap.release()
 
 # Hiệu suất

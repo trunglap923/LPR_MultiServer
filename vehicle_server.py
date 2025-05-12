@@ -51,7 +51,7 @@ class VehicleDetectionServicer(streaming_pb2_grpc.VehicleDetectionServiceService
             image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
             # Nhận diện bằng YOLO
-            results = await asyncio.to_thread(self.model, image_rgb, conf=0.4, iou=0.75,verbose=False)
+            results = await asyncio.to_thread(self.model, image_rgb, conf=0.4, iou=0.5, verbose=False)
             boxes = results[0].boxes.data.tolist()
 
             detected_vehicles = []

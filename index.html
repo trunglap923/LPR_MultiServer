@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Demo Vehicle Detection</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 0; }
+    nav { background: #222; color: white; padding: 10px; }
+    nav button { margin-right: 10px; padding: 8px; cursor: pointer; }
+    #content > div { display: none; padding: 10px; }
+    #content > .active { display: block; }
+    #log-list { max-height: 400px; overflow-y: auto; background: #eee; padding: 10px; }
+    .log-img { width: 320px; display: block; margin: 5px 0; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <button onclick="showTab('live')">🔴 Live Video</button>
+  <button onclick="showTab('search')">🔍 Tra cứu biển số</button>
+</nav>
+
+<div id="content">
+  <!-- LIVE VIDEO -->
+  <div id="live">
+    <h2>Live Video</h2>
+    <img id="live-video" src="" style="width: 80%;" />
+    <h3>Detection Log</h3>
+    <div id="log-list"></div>
+  </div>
+
+  <!-- TRA CỨU BIỂN SỐ -->
+  <div id="search">
+    <h2>Tra cứu biển số</h2>
+    <input type="text" id="plate-input" placeholder="Nhập biển số" />
+    <button onclick="searchPlate()">Tìm kiếm</button>
+    <div id="search-results"></div>
+  </div>
+</div>
+
+<script>
+
+let clientSocket = null;
+
+function showTab(tabId) {
+  document.querySelectorAll("#content > div").forEach(div => {
+    div.classList.remove("active");
+  });
+  document.getElementById(tabId).classList.add("active");
+
+  if (tabId === "live") {
+    startLiveView();
+  } else {
+    stopLiveView();
+  }
+}
+
+function startLiveView() {
+    if (!clientSocket || clientSocket.readyState !== WebSocket.OPEN) {
+        if (clientSocket) {
+            clientSocket.close();
+        }
+
+        clientSocket = new WebSocket("ws://localhost:8000/ws/client");
+
+        clientSocket.onopen = () => {
+            console.log("🚀 WebSocket đã kết nối tới ws/client");
+        };
+
+        clientSocket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            console.log("📦 Nhận dữ liệu từ server:", data);
+
+            const vehicleDict = {
+              2: "Car",
+              3: "Motorbike",
+              5: "Bus",
+              7: "Truck"
+            };
+
+            data.objects.forEach(o => {
+              o.vehicle_class = vehicleDict[o.vehicle_class] || `Unknown (${o.vehicle_class})`;
+            });
+      
+            const imageBlob = new Blob([new Uint8Array(atob(data.image_data).split("").map(c => c.charCodeAt(0)))], { type: "image/jpeg" });
+            const imageUrl = URL.createObjectURL(imageBlob);
+            const imgElement = document.getElementById("live-video");
+            imgElement.src = imageUrl;
+      
+            const logList = document.getElementById("log-list");
+            const div = document.createElement("div");
+          
+            const objectsInfo = data.objects.map(o => 
+              `ID: ${o.tracking_id} | ${o.vehicle_class} | ${o.plate_number || "⛔"}`
+            ).join(" | ");
+      
+            const date = new Date(data.timestamp);
+            const timeStr = date.toLocaleTimeString('vi-VN', { hour12: false });
+            const ms = String(date.getMilliseconds()).padStart(3, '0');
+            const formatted = `${timeStr}.${ms}`;
+
+            div.innerHTML = `
+              <strong>📦 Frame ${data.frame_id}</strong> | ${formatted}<br/>
+              ${objectsInfo}
+            `;
+            logList.prepend(div);
+        };
+    };
+}
+
+function stopLiveView() {
+  if (clientSocket) {
+    clientSocket.close();
+    clientSocket = null;
+  }
+  document.getElementById("live-video").src = "";
+  document.getElementById("log-list").innerHTML = "";
+}
+
+function searchPlate() {
+  const plate = document.getElementById("plate-input").value;
+  if (!plate) return;
+
+  fetch(`http://localhost:8000/search_plate?plate=${encodeURIComponent(plate)}`)
+    .then(res => res.json())
+    .then(results => {
+      const container = document.getElementById("search-results");
+      container.innerHTML = "<h3>Kết quả tìm kiếm:</h3>";
+      
+      if (results.length === 0) {
+        container.innerHTML += "<p>Không tìm thấy kết quả.</p>";
+        return;
+      }
+      console.log("📦 Kết quả tìm kiếm:", results);
+
+      const vehicleDict = {
+        2: "Car",
+        3: "Motorbike",
+        5: "Bus",
+        7: "Truck"
+      };
+
+      results.forEach(item => {
+        const div = document.createElement("div");
+        const timeStr = new Date(item.timestamp).toLocaleString("vi-VN");
+
+        const vehicleType = vehicleDict[item.vehicle_class] || `Unknown (${item.vehicle_class})`;
+
+        div.innerHTML = `
+          <strong>📸 Frame ${item.frame_id} - ${timeStr}</strong><br/>
+          🔢 Tracking ID: ${item.tracking_id} | 🚘 Loại xe: <b>${vehicleType}</b><br/>
+          🪪 Biển số: <b>${item.plate_number}</b><br/>
+          <img src="${item.image_link}" class="log-img" style="width: 80%;"/>
+          <hr/>
+        `;
+        container.appendChild(div);
+      });
+    })
+    .catch(err => {
+      console.error("Lỗi khi tìm kiếm:", err);
+    });
+}
+
+// Hiển thị mặc định tab live
+showTab('live');
+</script>
+</body>
+</html>

@@ -14,3 +14,8 @@ grpcio-tools==1.46.0
 torchreid== 0.2.5
 gdown==5.2.0
 tensorboard==2.19.0
+websockets==15.0.1
+fastapi==0.115.12
+uvicorn==0.34.2
+pymongo==4.12.1
+motor==3.7.0

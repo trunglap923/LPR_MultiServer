@@ -185,7 +185,7 @@ class OCRServicer(streaming_pb2_grpc.OCRServiceServicer):
 
 async def serve():
     server = grpc.aio.server()
-    servicer = OCRServicer(num_workers=16)
+    servicer = OCRServicer(num_workers=8)
     streaming_pb2_grpc.add_OCRServiceServicer_to_server(servicer, server)
     server.add_insecure_port("[::]:5003")          
     await server.start()
