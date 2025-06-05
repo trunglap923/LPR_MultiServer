@@ -10,7 +10,7 @@ import uvicorn
 app = FastAPI()
 # Kết nối tới MongoDB
 try:
-    client = MongoClient("mongodb+srv://lap:12345@cluster0.89utstf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+    client = MongoClient("mongodb+srv://***:*****@cluster0.89utstf.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
     db = client["vehicle_tracking_db"]
     collection = db["detection_logs"]
     print("✅ Kết nối tới MongoDB thành công")
